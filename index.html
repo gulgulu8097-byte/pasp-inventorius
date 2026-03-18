@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PASP Produktų Atsargos — LSMU Vaistinė</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f4f7f4; color: #2d2d2d; padding: 20px 16px 40px; }
+h2 { font-size: 1.35em; color: #2c5f2e; font-weight: 700; margin-bottom: 5px; }
+.subtitle { color: #666; font-size: 0.87em; margin-bottom: 16px; }
+.topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
+.edit-btn { padding:6px 14px; border-radius:5px; border:1px solid #2c5f2e; background:#fff; color:#2c5f2e; font-size:0.8em; font-weight:600; cursor:pointer; }
+.edit-btn.active { background:#2c5f2e; color:#fff; }
+.edit-indicator { display:none; background:#fff3cd; border:1px solid #ffc107; color:#856404; padding:6px 14px; border-radius:5px; font-size:0.8em; font-weight:600; }
+.edit-indicator.show { display:inline-block; }
+.reset-btn { display:none; padding:5px 12px; border-radius:5px; border:1px solid #c0392b; background:#fff; color:#c0392b; font-size:0.78em; font-weight:600; cursor:pointer; }
+.reset-btn:hover { background:#fdecea; }
+.reset-btn.show { display:inline-block; }
+/* Modal */
+.modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:999; align-items:center; justify-content:center; }
+.modal-bg.show { display:flex; }
+.modal { background:#fff; border-radius:10px; padding:28px 28px 24px; width:320px; box-shadow:0 8px 32px rgba(0,0,0,0.18); }
+.modal h3 { font-size:1.05em; color:#2c5f2e; margin-bottom:14px; }
+.modal input { width:100%; padding:9px 12px; border:1px solid #ccc; border-radius:5px; font-size:0.95em; margin-bottom:10px; }
+.modal input:focus { outline:none; border-color:#2c5f2e; }
+.modal .err { color:#c0392b; font-size:0.82em; min-height:18px; margin-bottom:8px; }
+.modal-btns { display:flex; gap:8px; justify-content:flex-end; }
+.modal-btns button { padding:7px 18px; border-radius:5px; border:none; font-size:0.88em; font-weight:600; cursor:pointer; }
+.btn-cancel { background:#f0f0f0; color:#555; }
+.btn-ok { background:#2c5f2e; color:#fff; }
+/* Tabs */
+.tabs { display:flex; gap:4px; border-bottom:2px solid #2c5f2e; flex-wrap:wrap; }
+.tab { padding:8px 18px; background:#e8f0e8; border:1px solid #cde0cd; border-bottom:none; border-radius:6px 6px 0 0; cursor:pointer; font-size:0.85em; font-weight:600; color:#2c5f2e; }
+.tab.active { background:#2c5f2e; color:#fff; border-color:#2c5f2e; }
+.pane { display:none; }
+.pane.active { display:block; }
+.toolbar { display:flex; align-items:center; gap:8px; padding:10px 12px; background:#fff; border:1px solid #dde8dd; border-top:none; flex-wrap:wrap; }
+.toolbar input { padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:0.84em; width:220px; }
+.toolbar input:focus { outline:none; border-color:#2c5f2e; }
+.fbtn { padding:5px 13px; border-radius:14px; border:1px solid #888; background:#fff; font-size:0.79em; cursor:pointer; font-weight:600; color:#555; }
+.fbtn.f-all.on { background:#555; color:#fff; }
+.fbtn.f-have { border-color:#2c5f2e; color:#2c5f2e; }
+.fbtn.f-have.on { background:#2c5f2e; color:#fff; }
+.fbtn.f-none { border-color:#c0392b; color:#c0392b; }
+.fbtn.f-none.on { background:#c0392b; color:#fff; }
+.cnt { margin-left:auto; font-size:0.78em; color:#999; }
+table { width:100%; border-collapse:collapse; background:#fff; border:1px solid #dde8dd; border-top:none; font-size:0.84em; }
+thead tr { background:#2c5f2e; color:#fff; }
+th { padding:9px 10px; text-align:left; font-weight:600; white-space:nowrap; }
+tbody tr { border-bottom:1px solid #eef3ee; }
+tbody tr:hover { background:#f0f8f0; }
+tbody tr.hide { display:none; }
+td { padding:8px 10px; vertical-align:middle; }
+td.num { color:#ccc; font-size:0.8em; }
+td.lat { font-style:italic; color:#3a5a3a; font-weight:500; }
+td.grey { color:#666; }
+/* Badges */
+.badge { display:inline-block; padding:3px 11px; border-radius:11px; font-size:0.8em; font-weight:700; user-select:none; }
+.badge.t { background:#e6f4e6; color:#1e7b1e; border:1px solid #a8d5a8; }
+.badge.n { background:#fdecea; color:#c0392b; border:1px solid #f5b7b1; }
+/* Editable badge */
+.badge.editable { cursor:pointer; position:relative; padding-right:22px; }
+.badge.editable::after { content:'✎'; position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:0.85em; opacity:0.6; }
+.badge.editable:hover { opacity:0.8; box-shadow:0 0 0 2px #2c5f2e44; }
+.form-badge { display:inline-block; padding:2px 8px; border-radius:4px; background:#e8f0e8; color:#2c5f2e; font-size:0.78em; font-weight:600; }
+.summary { display:flex; gap:16px; padding:8px 12px; background:#f0f8f0; border:1px solid #dde8dd; border-top:none; font-size:0.81em; color:#555; flex-wrap:wrap; margin-bottom:2px; }
+.summary .red { color:#c0392b; }
+.nores { display:none; padding:24px; text-align:center; color:#bbb; background:#fff; border:1px solid #dde8dd; border-top:none; }
+@media(max-width:600px){ th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none} .toolbar input{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h2>PASP Produktų Atsargos Vaistinėje</h2>
+    <p class="subtitle">Peržiūrėkite ko turime šiuo metu.</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="edit-indicator" id="edit-ind">✏️ Redagavimo režimas</span>
+    <button class="reset-btn" id="reset-btn" onclick="resetAll()" title="Atstatyti visus pakeitimus į pradinius duomenis">Atstatyti</button>
+    <button class="edit-btn" id="edit-btn" onclick="toggleEdit()">Darbuotojas</button>
+  </div>
+</div>
+
+<!-- Password modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3>Darbuotojo prisijungimas</h3>
+    <input type="password" id="pw-input" placeholder="Slaptažodis" onkeydown="if(event.key==='Enter')checkPw()">
+    <div class="err" id="pw-err"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Atšaukti</button>
+      <button class="btn-ok" onclick="checkPw()">Prisijungti</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="sw('MT',this)">Tinktūros (MT) &amp; EHA</button>
+  <button class="tab" onclick="sw('MG',this)">Gemoterapija (MG)</button>
+  <button class="tab" onclick="sw('HE',this)">Eteriniai aliejai (HE)</button>
+</div>
+
+<div id="pane-MT" class="pane active">
+  <div class="toolbar">
+    <input id="s-MT" type="text" placeholder="Ieškoti..." oninput="fil('MT')">
+    <button class="fbtn f-all on" id="fb-MT-all" onclick="sf('MT','all',this)">Visi</button>
+    <button class="fbtn f-have" id="fb-MT-t" onclick="sf('MT','t',this)">Turime</button>
+    <button class="fbtn f-none" id="fb-MT-n" onclick="sf('MT','n',this)">Neturime</button>
+    <span class="cnt" id="cnt-MT"></span>
+  </div>
+  <table><thead><tr><th>#</th><th>Lotyniškas pavadinimas</th><th>Lietuviškas pavadinimas</th><th>Galenė forma</th><th>Augalinė žaliava</th><th>Sandėlis</th></tr></thead>
+  <tbody id="b-MT"></tbody></table>
+  <div class="nores" id="nr-MT">Įrašų nerasta</div>
+  <div class="summary" id="sum-MT"></div>
+</div>
+
+<div id="pane-MG" class="pane">
+  <div class="toolbar">
+    <input id="s-MG" type="text" placeholder="Ieškoti..." oninput="fil('MG')">
+    <button class="fbtn f-all on" id="fb-MG-all" onclick="sf('MG','all',this)">Visi</button>
+    <button class="fbtn f-have" id="fb-MG-t" onclick="sf('MG','t',this)">Turime</button>
+    <button class="fbtn f-none" id="fb-MG-n" onclick="sf('MG','n',this)">Neturime</button>
+    <span class="cnt" id="cnt-MG"></span>
+  </div>
+  <table><thead><tr><th>#</th><th>Lotyniškas pavadinimas</th><th>Lietuviškas pavadinimas</th><th>Galenė forma</th><th>Augalinė žaliava</th><th>Sandėlis</th></tr></thead>
+  <tbody id="b-MG"></tbody></table>
+  <div class="nores" id="nr-MG">Įrašų nerasta</div>
+  <div class="summary" id="sum-MG"></div>
+</div>
+
+<div id="pane-HE" class="pane">
+  <div class="toolbar">
+    <input id="s-HE" type="text" placeholder="Ieškoti..." oninput="fil('HE')">
+    <button class="fbtn f-all on" id="fb-HE-all" onclick="sf('HE','all',this)">Visi</button>
+    <button class="fbtn f-have" id="fb-HE-t" onclick="sf('HE','t',this)">Turime</button>
+    <button class="fbtn f-none" id="fb-HE-n" onclick="sf('HE','n',this)">Neturime</button>
+    <span class="cnt" id="cnt-HE"></span>
+  </div>
+  <table><thead><tr><th>#</th><th>Lotyniškas pavadinimas</th><th>Lietuviškas pavadinimas</th><th>Galenė forma</th><th>Augalinė žaliava</th><th>Sandėlis</th></tr></thead>
+  <tbody id="b-HE"></tbody></table>
+  <div class="nores" id="nr-HE">Įrašų nerasta</div>
+  <div class="summary" id="sum-HE"></div>
+</div>
+
+<script>
+// ─── DEFAULT DATA ────────────────────────────────────────────────────────────
+var DEFAULT = {
+  MT:[
+    ["Achillea millefolium","Paprastoji kraujažolė","MT","Antžeminė dalis","t"],
+    ["Aesculus hippocastanum","Paprastasis kaštonas","MT","Sėklos","t"],
+    ["Agrimonia eupatoria","Vaistinė dirvuolė","MT","Antžeminė dalis","t"],
+    ["Alchemilla vulgaris","Šlaitinė rasakila","MT","Antžeminė dalis","t"],
+    ["Althaea officinalis","Vaistinė svilarozė","EHA","Šaknys","t"],
+    ["Archangelica officinalis","Vaistinė šventagaršvė","MT","Šaknys","t"],
+    ["Arctium lappa","Didžioji varnalėša","MT","Šaknys","t"],
+    ["Arnica montana","Kalninė arnika","MT","Antžeminė dalis","t"],
+    ["Ascophyllum nodosum","Jūrinis kopūstas","MT","Lapai","t"],
+    ["Astragalus membranaceus","Plėvėtoji kulkšnė","EHA","Šaknys","t"],
+    ["Avena sativa","Sėjamoji aviža","MT","Antžeminė dalis","t"],
+    ["Borago officinalis","Vaistinė agurklė","MT","Antžeminė dalis","t"],
+    ["Brassica oleracea","Lapinis kopūstas","EHA","Lapai","t"],
+    ["Calendula officinalis","Vaistinė medetka","MT","Žydinčios viršūnės","t"],
+    ["Carica papaya","Papajinis melionmedis","EHA","Lapai","t"],
+    ["Carica papaya","Papajinis melionmedis","MT","Vaisiai","t"],
+    ["Cichorium intybus","Paprastoji trūkažolė","EHA","Šaknys","t"],
+    ["Cimcifuga racemosa / Actaea racemosa","Kekinė juodžolė (Blakėžudė)","MT","Šaknys","t"],
+    ["Cynara scolymus","Tikrasis artišokas","EHA","Lapai","t"],
+    ["Crataegus oxycantha","Grauženlinė gudobelė","MT","Žiedai ir vaisiai","t"],
+    ["Crataegus monogyna","Vienapiestė gudobelė","EHA","Vaisiai","n"],
+    ["Crocus sativus","Daržinis krokas (Šafranas)","EHA","Purkos","t"],
+    ["Eleutherococcus senticosus","Juodasis eleuterokokas","MT","Šaknys","t"],
+    ["Equisetum arvense","Dirvinis asiūklis","MT","Antžeminė dalis","t"],
+    ["Echinacea purpurea","Rausvažiedė ežiuolė","EA","Antžeminė dalis","t"],
+    ["Eschscholzia californica","Geltonžiedė ešolcija","MT","Antžeminė dalis","t"],
+    ["Fabiana imbricata","Gausiažiedė fabiana","MT","Žydinčios viršūnės","t"],
+    ["Filipendula ulmaria","Pelkinė vingiorykštė","EHA","Žydinčios viršūnės","t"],
+    ["Fragaria vesca","Paprastoji žemuogė","EHA","Lapai","t"],
+    ["Fumaria officinalis","Vaistinė žvirbliarūtė","MT","Antžeminė dalis","t"],
+    ["Fucus vesiculosus","Pūslėtasis guveinis","MT","Gniužulas","t"],
+    ["Galega officinalis","Vaistinis ožiarūtis","EHA","Antžeminė dalis su vaisiais","t"],
+    ["Gentiana lutea","Geltonasis gencijonas","MT","Šaknys","t"],
+    ["Glycyrrhiza glabra","Paprastasis saldymedis","MT","Šaknys","t"],
+    ["Griffonia simplicifolia","Paprastoji grifonija","EHA","Vaisiai","t"],
+    ["Hamamelis virginiana","Sodinis hamamelis","MT","Žievė ir lapai","t"],
+    ["Harpagophytum procumbens","Gulsčiasis inkaruotis","MT","Šaknys","t"],
+    ["Hydrastis canadensis","Kanadinė auksašaknė","MT","Šaknys","t"],
+    ["Hypericum perforatum","Paprastoji jonažolė","MT","Antžeminė dalis","n"],
+    ["Humulus lupulus","Paprastasis apynys","MT","Spurgai","t"],
+    ["Inula helenium","Didysis debesylas","EHA","Šaknys","t"],
+    ["Juglans regia","Graikinis riešutmedis","MT","Lapai ir apyvaisiai","t"],
+    ["Lamium album","Baltažiedė notrelė","EHA","Antžeminė dalis","t"],
+    ["Lavandula angustifolia","Tikroji levanda","EHA","Žiedai","t"],
+    ["Leonurus cardiaca","Paprastoji sukatžolė","MT","Antžeminė dalis","t"],
+    ["Lepidium meyenii (maca)","Peruvine pipirnė","EHA","Šaknys","t"],
+    ["Lycium barbarum","Dygliuotasis ožeršis","EHA","Vaisiai","t"],
+    ["Lycopus europaeus","Paprastoji vilkakojė","EHA","Antžeminė dalis","t"],
+    ["Lithospermum officinale","Vaistinis kietagrūdis","MT","Antžeminė dalis","n"],
+    ["Mahonia aquifolium","Dyglialapė mahonia","EHA","Šaknys","t"],
+    ["Malva sylvestris","Miškinė dedešva","EHA","Antžeminė dalis","t"],
+    ["Matricaria chamomilla","Vaistinė ramunė","MT","Antžeminė dalis","t"],
+    ["Medicago sativa","Mėlynžiedė liucerna","MT","Antžeminė dalis","t"],
+    ["Melilotus officinalis","Geltonžiedis barkūnas","MT","Antžeminė dalis","t"],
+    ["Melissa officinalis","Vaistinė melisa","MT","Antžeminė dalis","t"],
+    ["Menyanthes trifoliata","Trilapis puplaišis","MT","Antžeminė dalis","t"],
+    ["Paeonia officinalis","Vaistinis bijūnas","MT","Šaknys","t"],
+    ["Panax ginseng","Kininis ženšenis","MT","Šaknys","t"],
+    ["Passiflora incarnata","Raudonžiedė pasiflora","MT","Antžeminė dalis","t"],
+    ["Plantago major","Plačialapis gyslotis","MT","Antžeminė dalis","t"],
+    ["Plantago lanceolata","Siauralapis gyslotis","MT","Antžeminė dalis","t"],
+    ["Poterium sanguisorba","Mažoji kraujajakė","MT","Antžeminė dalis","t"],
+    ["Prunella vulgaris","Paprastoji juodgalvė","EHA","Antžeminė dalis","n"],
+    ["Prunus africana","Afrikinė slyva","EHA","Žievė","n"],
+    ["Quercus spiritus glandulosum D3","Paprastasis ąžuolas","EHA","Vaisiai (gilės)","t"],
+    ["Quercus pedunculata","Paprastasis ąžuolas","EHA","Žievė","t"],
+    ["Raphanus sativus niger","Juodasis ridikas","MT","Šaknys","t"],
+    ["Rhodiola rosea","Rausvoji rodiolė","EHA","Šaknys","t"],
+    ["Ribes nigrum","Juodasis serbentas","MT","Lapai","t"],
+    ["Salvia officinalis","Vaistinis šalavijas","MT","Antžeminė dalis","t"],
+    ["Salvia sclarea","Kvapusis šalavijas","MT","Antžeminė dalis","t"],
+    ["Sambucus nigra","Juodauogis šeivamedis","EHA","Lapai ir žiedai","t"],
+    ["Scutellaria lateriflora","Šviesioji kalpokė","MT","Antžeminė dalis","n"],
+    ["Silybum marianum","Tikrasis margainis","MT","Vaisiai","t"],
+    ["Taraxacum officinale","Paprastoji kiaulpienė","MT","Antžeminė dalis","t"],
+    ["Trifolium pratense","Raudonasis dobilas","MT","Žiedai","n"],
+    ["Tribulus terrestris","Gulsčioji ragužė","MT","Antžeminė dalis","t"],
+    ["Thymus vulgaris","Vaistinis čiobrelis","MT","Antžeminė dalis","t"],
+    ["Urtica dioica","Didžioji dilgėlė","MT","Antžeminė dalis","t"],
+    ["Vaccinium myrthyllus","Paprastoji mėlynė","MT","Ūgliai arba pumpurai","t"],
+    ["Valeriana officinalis","Vaistinis valerijonas","MT","Šaknys","t"],
+    ["Vinca minor","Mažoji žiemė","MT","Antžeminė dalis","t"],
+    ["Viscum album","Paprastasis amalas","MT","Šakelės su vaisiais","t"],
+    ["Viola tricolor","Trispalvė našlaitė","MT","Antžeminė dalis","t"],
+    ["Vitex agnus castus","Tikrasis skaistminas","MT","Vaisiai","t"],
+    ["Zea mays","Paprastasis kukurūzas","MT","Purkos","t"],
+    ["Zingiber officinalis","Tikrasis imbieras","MT","Šaknys","t"]
+  ],
+  MG:[
+    ["Abies pectinata","Europinis kėnis","GM D1","Pumpurai","t"],
+    ["Acer campestris","Trakinis klevas","GM D1","Pumpurai","t"],
+    ["Aesculus hippocastanum","Paprastasis kaštonas","GM D1","Sėklos","t"],
+    ["Alnus glutinosa","Juodalksnis","GM D1","Pumpurai","t"],
+    ["Betula alba pubescens","Plaukuotasis beržas","GM D1","Pumpurai","t"],
+    ["Betula verrucosa/pendula","Karpotasis beržas","GM D1","Vyriški žirginiai","t"],
+    ["Buxus sempervirens","Paprastasis buksmedis","GM D1","Ūgliai","t"],
+    ["Cedrus libani","Libano kedras","GM D1","Ūgliai","t"],
+    ["Corylus avellana","Paprastasis lazdynas","GM D1","Pumpurai","t"],
+    ["Cornus sanguinea","Raudonoji sedula","GM D1","Pumpurai","t"],
+    ["Ficus carica","Skiautėtalapis fikusas","GM D1","Pumpurai","t"],
+    ["Fagus sylvatica","Paprastasis bukas","GM D1","Pumpurai","t"],
+    ["Fraxinus excelsior","Paprastasis uosis","GM D1","Pumpurai","t"],
+    ["Ilex aquifolium","Dygialapis bugienis","GM D1","Ūgliai","t"],
+    ["Juglans regia","Graikinis riešutmedis","GM D1","Pumpurai","t"],
+    ["Juniperus communis","Paprastasis kadagys","GM D1","Ūgliai","t"],
+    ["Magnolia officinalis","Vaistinė magnolija","GM D1","Pumpurai","t"],
+    ["Olea europaea","Europinis alyvmedis","GM D1","Ūgliai","t"],
+    ["Pinus montana","Kalninė pušis","GM D1","Pumpurai","t"],
+    ["Platanus orientalis","Rytų platanas","GM D1","Pumpurai","t"],
+    ["Prunus amygdalus","Paprastasis migdolas","GM D1","Pumpurai","t"],
+    ["Prunus spinosa","Dygioji slyva","GM D1","Pumpurai","t"],
+    ["Quercus pedunculata","Paprastasis ąžuolas","GM D1","Pumpurai","t"],
+    ["Ribes nigrum","Juodasis serbentas","GM D1","Pumpurai","t"],
+    ["Rosa canina","Paprastasis erškėtis","GM D1","Ūgliai","t"],
+    ["Rosmarinus officinalis","Kvapusis rozmarinas","GM D1","Ūgliai","t"],
+    ["Rubus fructicosus","Raukšlėtoji gervuogė","GM D1","Ūgliai","t"],
+    ["Rubus idaeus","Paprastoji avietė","GM D1","Ūgliai","t"],
+    ["Secale cereale","Sėjamasis rugys","GM D1","Šaknelės","t"],
+    ["Sequoia gigantea","Didysis mamutmedis","GM D1","Ūgliai","t"],
+    ["Sorbus aucuparia","Paprastasis šermukšnis","GM D1","Pumpurai","n"],
+    ["Sorbus domestica","Naminis šermukšnis","GM D1","Pumpurai","t"],
+    ["Tamarix gallica","Prancūzinis eglūnas","GM D1","Ūgliai","t"],
+    ["Tilia tomentosa","Sidabrinė liepa","GM D1","Pumpurai","t"],
+    ["Ulmus campestris","Paprastoji guoba","GM D1","Pumpurai","t"],
+    ["Vaccinium myrtillus","Paprastoji mėlynė","GM D1","Ūgliai","t"],
+    ["Vaccinium vitis-idaea","Paprastoji bruknė","GM D1","Ūgliai","t"],
+    ["Viburnum lantana","Sodinis putinas","GM D1","Pumpurai","t"],
+    ["Viscum album","Paprastasis amalas","GM D1","Pumpurai","t"],
+    ["Vitis vinifera","Tikrasis vynmedis","GM D1","Pumpurai","t"],
+    ["Zea mays","Paprastasis kukurūzas","GM D1","Šaknelės","t"]
+  ],
+  HE:[
+    ["Abies balsamea","Balzaminis kėnis","HE","Spygliai","n"],
+    ["Achillea millefolium","Paprastoji kraujažolė","HE","Žiedai","n"],
+    ["Anthemis nobilis / Chamaemelum nobile","Taurusis didramunis","HE","Žiedai","n"],
+    ["Artemisia dracunculus","Vaistinis kietis (peletrūnas)","HE","Lapai","t"],
+    ["Boswellia sacra","Smilkalinė bosvelija","HE","Derva (sakai)","t"],
+    ["Cananga odorata (Ylang-ylang)","Kvapioji kananga","HE","Žiedai","t"],
+    ["Cinnamomum zeylanicum","Ceiloninis cinamonas","HE","Žievė","t"],
+    ["Citrus aurantium bergamia","Bergaminis citrinmedis","HE","Vaisių žievelės","t"],
+    ["Citrus limon","Tikrasis citrinmedis","HE","Vaisių žievelės","t"],
+    ["Citrus paradisi","Greipfrutinis citrinmedis","HE","Vaisių žievelės","n"],
+    ["Citrus reticulata","Mandarininis citrinmedis","HE","Vaisių žievelės","n"],
+    ["Commiphora","Miramedis","HE","Medžio derva","t"],
+    ["Copaifera officinalis","Vaistinė kopaifera","HE","Derva (sakai)","t"],
+    ["Cupressus sempervirens","Visžalis kiparisas","HE","Šakelės","t"],
+    ["Elletaria cardamonum","Tikrasis kardamonas","HE","Sėklos","t"],
+    ["Eucalyptus globulus","Rutulinis eukaliptas","HE","Lapai","t"],
+    ["Eucalyptus radiata","Spindulinis eukaliptas","HE","Lapai","t"],
+    ["Eugenia caryophyllus","Gvazdikmedis","HE","Žiedpumpurai","t"],
+    ["Foeniculum vulgare","Paprastasis pankolis","HE","Sėklos","t"],
+    ["Juniperus communis","Paprastasis kadagys","HE","Kankorėžiukai","t"],
+    ["Laurus nobilis","Kilnusis lauramedis","HE","Lapai","t"],
+    ["Matricaria chamomilla / recutita","Vaistinė ramunė","HE","Žiedai","n"],
+    ["Melaleuca alternifolia","Pražangialapė mirtenė","HE","Lapai","t"],
+    ["Melaleuca leucadenda (Cajeput)","Baltoji mirtenė","HE","Lapai","t"],
+    ["Mentha piperita","Pipirmėtė","HE","Lapai","n"],
+    ["Nardostachys grandiflora","Stambiažiedis nardas","HE","Šaknys","n"],
+    ["Ocimum basilicum","Kvapusis bazilikas","HE","Lapai","t"],
+    ["Origanum vulgare","Paprastasis raudonėlis","HE","Žiedai","t"],
+    ["Piper nigrum","Juodasis pipiras","HE","Vaisiai","n"],
+    ["Rosmarinus officinalis","Rozmarinas","HE","Lapai, žiedai","t"],
+    ["Salvia officinalis","Vaistinis šalavijas","HE","Žiedai","t"],
+    ["Salvia sclarea","Kvapusis šalavijas","HE","Žiedai","n"],
+    ["Satureja montana","Kalninis dašis","HE","Žiedai","t"],
+    ["Syzygium aromaticum","Kvapusis gvazdikmedis","HE","Pumpurai","n"],
+    ["Thymus vulgaris","Vaistinis čiobrelis","HE","Žiedai","t"],
+    ["Zingiber officinalis","Tikrasis imbieras","HE","Šakniastiebiai","t"]
+  ]
+};
+
+// ─── PASSWORD (SHA-256 hash of "lsmu2026") ───────────────────────────────────
+// To change: run SHA-256 on your desired password and replace this value
+var PW_HASH = "2dd605cd488226cd631049c5bbda95454a72f3a2878116cca5a5ff8e4b3f5c39";
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+var editMode = false;
+var activeF = {MT:'all', MG:'all', HE:'all'};
+
+// JSONBin.io — bendra serverio saugykla visiems lankytojams
+var BIN_ID  = '69bb2f10aa77b81da9f8fb2a';
+var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
+var BIN_KEY = '$2a$10$aj/v6D6IydWdsEru9ODmT.Tu/CBJ9sLEgpRQgtpjFHV/jH517cN7q';
+
+// In-memory cache (atnaujinama po kiekvieno GET/PUT)
+var _ov = {MT:{}, MG:{}, HE:{}};
+// Debounce laikmatis — grupuoja greitus pakeitimus
+var _saveTimer = null;
+
+// Kraunami statusai iš serverio (paleisti inicializacijos metu)
+function fetchOverrides(callback) {
+  fetch(BIN_URL + '/latest', {
+    headers: { 'X-Master-Key': BIN_KEY }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    _ov = data.record || {MT:{}, MG:{}, HE:{}};
+    if (!_ov.MT) _ov.MT = {};
+    if (!_ov.MG) _ov.MG = {};
+    if (!_ov.HE) _ov.HE = {};
+    if (callback) callback();
+  })
+  .catch(function(){ if (callback) callback(); });
+}
+
+// Išsaugoma į serverį (debounced 800ms — sugrupuoja greitus paspaudimus)
+function persistOverrides() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(function(){
+    fetch(BIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': BIN_KEY
+      },
+      body: JSON.stringify(_ov)
+    }).catch(function(){});
+  }, 800);
+}
+
+// Get effective stock for a product
+function getStock(sheet, idx) {
+  var key = String(idx);
+  return (_ov[sheet] && _ov[sheet][key] !== undefined)
+    ? _ov[sheet][key]
+    : DEFAULT[sheet][idx][4];
+}
+
+function setStock(sheet, idx, val) {
+  if (!_ov[sheet]) _ov[sheet] = {};
+  _ov[sheet][String(idx)] = val;
+  persistOverrides();
+}
+
+// ─── SHA-256 (pure JS, no dependencies) ─────────────────────────────────────
+async function sha256(msg) {
+  var msgBuffer = new TextEncoder().encode(msg);
+  var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  var hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+// ─── AUTH ────────────────────────────────────────────────────────────────────
+function toggleEdit() {
+  if (editMode) {
+    editMode = false;
+    document.getElementById('edit-btn').textContent = 'Darbuotojas';
+    document.getElementById('edit-btn').classList.remove('active');
+    document.getElementById('edit-ind').classList.remove('show');
+    document.getElementById('reset-btn').classList.remove('show');
+    rebuildAll();
+  } else {
+    document.getElementById('modal').classList.add('show');
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-err').textContent = '';
+    setTimeout(function(){ document.getElementById('pw-input').focus(); }, 100);
+  }
+}
+
+function resetAll() {
+  if (!confirm('Ar tikrai norite atstatyti VISUS pakeitimus į pradinius duomenis? Tai negalima atšaukti.')) return;
+  _ov = {MT:{}, MG:{}, HE:{}};
+  clearTimeout(_saveTimer);
+  fetch(BIN_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_KEY },
+    body: JSON.stringify(_ov)
+  }).catch(function(){});
+  rebuildAll();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+function checkPw() {
+  var val = document.getElementById('pw-input').value;
+  sha256(val).then(function(hash) {
+    if (hash === PW_HASH) {
+      editMode = true;
+      closeModal();
+      document.getElementById('edit-btn').textContent = 'Išeiti';
+      document.getElementById('edit-btn').classList.add('active');
+      document.getElementById('edit-ind').classList.add('show');
+      document.getElementById('reset-btn').classList.add('show');
+      rebuildAll();
+    } else {
+      document.getElementById('pw-err').textContent = 'Neteisingas slaptažodis.';
+      document.getElementById('pw-input').select();
+    }
+  });
+}
+
+// Close modal on background click
+document.getElementById('modal').addEventListener('click', function(e){
+  if (e.target === this) closeModal();
+});
+
+// ─── TABLE BUILDING ───────────────────────────────────────────────────────────
+function build(s) {
+  var tb = document.getElementById('b-'+s);
+  var rows = '';
+  for (var i = 0; i < DEFAULT[s].length; i++) {
+    var r = DEFAULT[s][i];
+    var stock = getStock(s, i);
+    var badgeClass = stock === 't' ? 'badge t' : 'badge n';
+    var badgeText  = stock === 't' ? 'Turime' : 'Neturime';
+    var badgeEdit  = editMode ? ' editable' : '';
+    var onclick    = editMode ? ' onclick="toggle(\''+s+'\','+i+',this)"' : '';
+    var badge = '<span class="'+badgeClass+badgeEdit+'" data-s="'+s+'" data-i="'+i+'"'+onclick+'>'+badgeText+'</span>';
+    var bg = i%2===0 ? '' : ' style="background:#f7fbf7"';
+    rows += '<tr'+bg+' data-s="'+stock+'" data-q="'+r[0].toLowerCase()+' '+r[1].toLowerCase()+' '+r[3].toLowerCase()+'">'
+      +'<td class="num">'+(i+1)+'</td>'
+      +'<td class="lat">'+r[0]+'</td>'
+      +'<td>'+r[1]+'</td>'
+      +'<td><span class="form-badge">'+r[2]+'</span></td>'
+      +'<td class="grey">'+r[3]+'</td>'
+      +'<td>'+badge+'</td>'
+      +'</tr>';
+  }
+  tb.innerHTML = rows;
+  updateSum(s);
+  applyF(s);
+}
+
+function rebuildAll() {
+  build('MT'); build('MG'); build('HE');
+}
+
+// ─── TOGGLE STOCK (edit mode) ────────────────────────────────────────────────
+function toggle(s, i, el) {
+  var cur = getStock(s, i);
+  var next = cur === 't' ? 'n' : 't';
+  setStock(s, i, next);
+  // Update badge
+  el.className = 'badge ' + next + ' editable';
+  el.textContent = next === 't' ? 'Turime' : 'Neturime';
+  // Update row data-s for filter
+  var tr = el.closest('tr');
+  tr.dataset.s = next;
+  updateSum(s);
+  applyF(s);
+}
+
+// ─── SUMMARY ─────────────────────────────────────────────────────────────────
+function updateSum(s) {
+  var total = DEFAULT[s].length, have = 0, none = 0;
+  for (var i = 0; i < total; i++) {
+    if (getStock(s, i) === 't') have++; else none++;
+  }
+  document.getElementById('sum-'+s).innerHTML =
+    'Iš viso: <strong>'+total+'</strong> &nbsp;|&nbsp; '+
+    'Turime: <strong>'+have+'</strong> &nbsp;|&nbsp; '+
+    '<span class="red">Neturime: <strong>'+none+'</strong></span>';
+}
+
+// ─── FILTER ──────────────────────────────────────────────────────────────────
+function applyF(s) {
+  var q = document.getElementById('s-'+s).value.toLowerCase();
+  var f = activeF[s];
+  var rows = document.getElementById('b-'+s).querySelectorAll('tr');
+  var vis = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    var mq = !q || r.dataset.q.indexOf(q) > -1;
+    var mf = f === 'all' || r.dataset.s === f;
+    if (mq && mf) { r.classList.remove('hide'); vis++; }
+    else r.classList.add('hide');
+  }
+  document.getElementById('nr-'+s).style.display = vis === 0 ? 'block' : 'none';
+  document.getElementById('cnt-'+s).textContent = vis + ' rodomi';
+}
+
+function fil(s) { applyF(s); }
+
+function sf(s, f, btn) {
+  activeF[s] = f;
+  var btns = btn.parentNode.querySelectorAll('.fbtn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('on');
+  btn.classList.add('on');
+  applyF(s);
+}
+
+function sw(s, btn) {
+  var panes = document.querySelectorAll('.pane');
+  var tabs  = document.querySelectorAll('.tab');
+  for (var i = 0; i < panes.length; i++) panes[i].classList.remove('active');
+  for (var i = 0; i < tabs.length; i++)  tabs[i].classList.remove('active');
+  document.getElementById('pane-'+s).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+// Pirmiausia krauname iš serverio, tada rodome lenteles
+fetchOverrides(function() {
+  build('MT'); build('MG'); build('HE');
+});
+</script>
+</body>
+</html>
