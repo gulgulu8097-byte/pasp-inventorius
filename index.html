@@ -67,7 +67,7 @@ td.grey { color:#666; }
 .summary { display:flex; gap:16px; padding:8px 12px; background:#f0f8f0; border:1px solid #dde8dd; border-top:none; font-size:0.81em; color:#555; flex-wrap:wrap; margin-bottom:2px; }
 .summary .red { color:#c0392b; }
 .nores { display:none; padding:24px; text-align:center; color:#bbb; background:#fff; border:1px solid #dde8dd; border-top:none; }
-@media(max-width:600px){ th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none} .toolbar input{width:100%} }
+@media(max-width:600px){ #pane-MT th:nth-child(4),#pane-MT td:nth-child(4),#pane-MT th:nth-child(5),#pane-MT td:nth-child(5),#pane-MG th:nth-child(4),#pane-MG td:nth-child(4),#pane-MG th:nth-child(5),#pane-MG td:nth-child(5),#pane-HE th:nth-child(4),#pane-HE td:nth-child(4),#pane-HE th:nth-child(5),#pane-HE td:nth-child(5){display:none} .toolbar input{width:100%} }
 </style>
 </head>
 <body>
@@ -101,6 +101,7 @@ td.grey { color:#666; }
   <button class="tab active" onclick="sw('MT',this)">Tinktūros (MT) &amp; EHA</button>
   <button class="tab" onclick="sw('MG',this)">Gemoterapija (MG)</button>
   <button class="tab" onclick="sw('HE',this)">Eteriniai aliejai (HE)</button>
+  <button class="tab" onclick="sw('AZ',this)">Augalinės žaliavos</button>
 </div>
 
 <div id="pane-MT" class="pane active">
@@ -143,6 +144,20 @@ td.grey { color:#666; }
   <tbody id="b-HE"></tbody></table>
   <div class="nores" id="nr-HE">Įrašų nerasta</div>
   <div class="summary" id="sum-HE"></div>
+</div>
+
+<div id="pane-AZ" class="pane">
+  <div class="toolbar">
+    <input id="s-AZ" type="text" placeholder="Ieškoti..." oninput="fil('AZ')">
+    <button class="fbtn f-all on" id="fb-AZ-all" onclick="sf('AZ','all',this)">Visi</button>
+    <button class="fbtn f-have" id="fb-AZ-t" onclick="sf('AZ','t',this)">Turime</button>
+    <button class="fbtn f-none" id="fb-AZ-n" onclick="sf('AZ','n',this)">Neturime</button>
+    <span class="cnt" id="cnt-AZ"></span>
+  </div>
+  <table><thead><tr><th>#</th><th>Lotyniškas pavadinimas</th><th>Lietuviškas pavadinimas</th><th>Sandėlis</th></tr></thead>
+  <tbody id="b-AZ"></tbody></table>
+  <div class="nores" id="nr-AZ">Įrašų nerasta</div>
+  <div class="summary" id="sum-AZ"></div>
 </div>
 
 <script>
@@ -317,6 +332,215 @@ var DEFAULT = {
     ["Syzygium aromaticum","Kvapusis gvazdikmedis","HE","Pumpurai","n"],
     ["Thymus vulgaris","Vaistinis čiobrelis","HE","Žiedai","t"],
     ["Zingiber officinalis","Tikrasis imbieras","HE","Šakniastiebiai","t"]
+  ],
+  AZ:[
+    ["Absinthii herba","Karčiųjų kiečių žolė","n"],
+    ["Actaea racemosae rhizoma (Cimicifugae rhizoma)","Kekinių juodžolių šakniastiebiai (kekinių blakėžudžių šakniastiebiai)","n"],
+    ["Agni casti fructus","Tikrųjų skaistminių vaisiai","n"],
+    ["Agrimoniae herba","Dirvuolių žolė","n"],
+    ["Alchemillae herba","Rasakilų žolė","n"],
+    ["Allii cepae bulbus","Valgomųjų svogūnų galvutės","n"],
+    ["Allii sativi bulbus","Valgomųjų česnakų galvutės","n"],
+    ["Alni fructus","Alksnių vaisiai (kankorėžiai)","n"],
+    ["Althaeae folium","Svilarožių lapai","n"],
+    ["Althaeae radix","Svilarožių šaknys","n"],
+    ["Althaeae flos","Svilarožių žiedai","n"],
+    ["Anethi fructus","Krapų vaisiai","n"],
+    ["Anethi herba","Krapų žolė","n"],
+    ["Angelicae archangelicae radix","Vaistinių šventagaršvių šaknys","n"],
+    ["Angelicae dahuricae radix","Daūrinių skudučių šaknys","n"],
+    ["Angelicae fructus","Vaistinių šventagaršvių vaisiai","n"],
+    ["Angelicae herba","Vaistinių šventagaršvių žolė","n"],
+    ["Angelicae sinensis radix","Kininių skudučių šaknys","n"],
+    ["Anisi fructus","Anyžių vaisiai","n"],
+    ["Anserinae herba","Žąsinių sidabražolių žolė","n"],
+    ["Anthyllidis flos/herba","Perluočių žiedai/žolė","n"],
+    ["Apii fructus","Salierų vaisiai","n"],
+    ["Apii herba/folium","Salierų žolė/lapai","n"],
+    ["Apii radix","Salierų šaknys","n"],
+    ["Arctii radix (Bardanae radix)","Varnalėšų šaknys","n"],
+    ["Aronii melanocarpae fructus","Juodavaisių aronijų vaisiai","n"],
+    ["Artemisiae vulgaris herba","Paprastųjų kiečių žolė","n"],
+    ["Asparagi herba","Smidrų žolė","n"],
+    ["Asparagi rhizoma","Smidrų šakniastiebiai","n"],
+    ["Asparagi racemosi radix","Standžiųjų smidrų šaknys","n"],
+    ["Astragali glycyphylii herba","Saldžialapių kulkšnių žolė","n"],
+    ["Aurantii amari epicarpium et mesocarpium","Karčiavaisių citrinmedžių vaisių epikarpis ir mezokarpis","n"],
+    ["Avenae fructus","Avižų vaisiai","n"],
+    ["Avenae herba","Avižų žolė","n"],
+    ["Avenae stramentum","Avižų šiaudai","n"],
+    ["Azadirachti folium","Nimbamedžių lapai","n"],
+    ["Azadirachti oleum","Nimbamedžių aliejus","n"],
+    ["Berberidis cortex","Raugerškių žievė","n"],
+    ["Berberidis fructus","Raugerškių vaisiai","n"],
+    ["Berberidis radicis cortex","Raugerškių šaknų žievė","n"],
+    ["Berberidis radix","Raugerškių šaknys","n"],
+    ["Betulae folium","Beržų lapai","n"],
+    ["Betulae gemma","Beržų pumpurai","n"],
+    ["Bidentis tripartitae herba","Triskiaučių lakišių žolė","n"],
+    ["Boraginis flos","Vaistinių agurklių žiedai","n"],
+    ["Boraginis herba","Vaistinių agurklių žolė","n"],
+    ["Bupleuri radix","Gaivenių šaknys","n"],
+    ["Bursae pastoris herba","Trikerčių žvaginių žolė","n"],
+    ["Calami rhizoma","Balinių ajerų šakniastiebiai","n"],
+    ["Calendulae flos","Medetkų žiedai","n"],
+    ["Calendulae herba","Medetkų žolė","n"],
+    ["Callunae vulgaris flos","Viržių žiedai","n"],
+    ["Callunae vulgaris herba","Viržių žolė","n"],
+    ["Camelliae sinensis non fermentata folia","Kininių arbatmedžių nefermentuoti lapai","n"],
+    ["Camphora","Kamparas","n"],
+    ["Cardamomi semen","Kardamonų sėklos","n"],
+    ["Carvi fructus","Kmynų vaisiai","n"],
+    ["Centaurii herba","Širdažolių žolė","n"],
+    ["Centellae asiaticae herba","Azijinių centelių žolė","n"],
+    ["Chamomillae romanae flos","Tauriųjų didramunių žiedai","n"],
+    ["Cichorii intybi radix","Paprastųjų trūkažolių šaknys","n"],
+    ["Cichorii intybi herba","Paprastųjų trūkažolių žolė","n"],
+    ["Cinnamomi chinensis cortex (Cinnamomi cassiae cortex)","Kininių cinamonų žievė","n"],
+    ["Cinnamomi cortex (Cinnamomi ceylanici cortex)","Cinamonų žievė","n"],
+    ["Citri pericarpium","Citrinų perikarpis","n"],
+    ["Coriandri fructus","Kalendrų vaisiai","n"],
+    ["Crataegi folium cum flore","Gudobelių lapai ir žiedai","n"],
+    ["Crataegi fructus","Gudobelių vaisiai","n"],
+    ["Cucurbitae semen","Moliūgų sėklos","n"],
+    ["Curcumae longae rhizoma","Dažinių ciberžolių šakniastiebiai","n"],
+    ["Curcumae xanthorrhizae rhizoma","Geltonšaknių ciberžolių šakniastiebiai","n"],
+    ["Cyani flos","Rugiagėlių žiedai","n"],
+    ["Cynarae folium","Artišokų lapai","n"],
+    ["Echinaceae angustifoliae radix","Siauralapių ežiuolių šaknys","n"],
+    ["Echinaceae angustifoliae herba","Siauralapių ežiuolių žolė","n"],
+    ["Echinaceae purpureae herba","Rausvažiedžių ežiuolių žolė","n"],
+    ["Echinaceae purpureae radix","Rausvažiedžių ežiuolių šaknys","n"],
+    ["Eleutherococci radix","Eleuterokokų šaknys","n"],
+    ["Epilobii herba/folium","Gauromečių žolė/lapai","n"],
+    ["Equiseti herba","Asiūklių žolė","n"],
+    ["Eucalypti folium","Eukaliptų lapai","n"],
+    ["Euphrasiae herba","Akišveičių žolė","n"],
+    ["Filipendulae ulmariae flos","Pelkinių vingiorykščių žiedynai","n"],
+    ["Filipendulae ulmariae herba (Spiraeae herba)","Pelkinių vingiorykščių žolė","n"],
+    ["Foeniculi fructus","Pankolių vaisiai","n"],
+    ["Fragariae folium","Žemuogių lapai","n"],
+    ["Fragariae fructus","Žemuogių vaisiai","n"],
+    ["Fucus vel Ascophyllum","Guveinių gniužulai","n"],
+    ["Fumariae herba","Žvirbliarūčių žolė","n"],
+    ["Galii aparinis herba","Kibiųjų lipikų žolė","n"],
+    ["Gentianae radix","Gencijonų šaknys","n"],
+    ["Ginkgo folium","Ginkmedžių lapai","n"],
+    ["Glechomae herba","Tramažolių žolė","n"],
+    ["Graminis rhizoma (Agropyri repentis rhizoma)","Varpučių šakniastiebiai","n"],
+    ["Hamamelidis cortex","Hamamelių žievė","n"],
+    ["Hamamelidis folium","Hamamelių lapai","n"],
+    ["Helenii rhizoma","Debesylų šakniastiebiai","n"],
+    ["Helichrysi flos","Šlamučių žiedai","n"],
+    ["Herniariae herba","Skleistenių žolė","n"],
+    ["Hippophaes fructus","Šaltalankių vaisiai","n"],
+    ["Hippocastani flos","Kaštonų žiedai","n"],
+    ["Hyperici herba","Jonažolių žolė","n"],
+    ["Hyssopi herba","Isopų (juozažolių) žolė","n"],
+    ["Juglandis nigri pericarpium","Juodųjų riešutmedžių vaisių pertvarėlės","n"],
+    ["Juglandis folium","Riešutmedžių lapai","n"],
+    ["Juniperi galbulus (Juniperi pseudo-fructus)","Kadagių vaisiai","n"],
+    ["Lavandulae flos","Tikrųjų levandų žiedai","n"],
+    ["Leonuri cardiacae herba","Sukatžolių žolė","n"],
+    ["Levistici radix","Gelsvių šaknys","n"],
+    ["Lichen islandicus","Islandinių kerpenų gniužulas","n"],
+    ["Lini semen","Linų sėklos","n"],
+    ["Liquiritiae radix (Glycyrrhizae radix)","Saldymedžių šaknys","n"],
+    ["Lupuli flos/glandula (strobulus)","Apynių spurgai","n"],
+    ["Malvae flos","Dedešvų žiedai","n"],
+    ["Malvae folium","Dedešvų lapai","n"],
+    ["Marrubii herba","Šantrų žolė","n"],
+    ["Matricariae flos (Chamomillae flos)","Ramunių žiedai","n"],
+    ["Maydis stigma","Kukurūzų purkos","n"],
+    ["Meliloti herba","Barkūnų žolė","n"],
+    ["Melissae folium/herba","Melisų lapai/žolė","n"],
+    ["Menyanthidis trifoliatae folium","Trilapių pupalaiškių lapai","n"],
+    ["Menthae piperitae folium","Pipirinių mėtų lapai","n"],
+    ["Millefolii flos","Kraujažolių žiedai","n"],
+    ["Millefolii herba","Kraujažolių žolė","n"],
+    ["Myrrha","Mira","n"],
+    ["Myrtilli folium","Mėlynių lapai","n"],
+    ["Myrtilli fructus siccus/recens","Mėlynių vaisiai, džiovinti/šviežūs","n"],
+    ["Nepetae catariae herba","Katžolių žolė","n"],
+    ["Oleae folium","Alyvmedžių lapai","n"],
+    ["Olibanum indicum (Gummi Boswellii)","Pluoštinių bosvelijų derva","n"],
+    ["Origani herba","Raudonėlių žolė","n"],
+    ["Olivae oleum","Alyvmedžių aliejus","n"],
+    ["Orthosiphonis folium","Arbatinių inkstažolių lapai","n"],
+    ["Paeoniae flos","Bijūnų žiedai","n"],
+    ["Paeoniae herba","Bijūnų žolė","n"],
+    ["Paeoniae radix","Bijūnų šaknys","n"],
+    ["Pini turiones","Pušų ūgliai","n"],
+    ["Passiflorae herba","Pasiflorų žolė","n"],
+    ["Petroselini fructus","Petražolių sėklos","n"],
+    ["Petroselini radix","Petražolių šaknys","n"],
+    ["Phaseoli pericarpium (Fructus Phaseoli sine semine)","Pupelių ankštys","n"],
+    ["Pini gemma","Pušų pumpurai","n"],
+    ["Plantaginis lanceolatae folium","Siauralapių gysločių lapai","n"],
+    ["Plantaginis majoris folium","Plačialapių gysločių lapai","n"],
+    ["Plantaginis ovatae semen","Balkšvųjų gysločių sėklos","n"],
+    ["Plantaginis ovatae testa","Balkšvųjų gysločių sėklų luobelės","n"],
+    ["Polygalae radix (= Senegae radix)","Putokšlių šaknys","n"],
+    ["Polygoni avicularis herba","Takažolių žolė","n"],
+    ["Polygoni cuspidati rhizoma et radix","Japoninių reinutrių šakniastiebiai ir šaknys","n"],
+    ["Populi gemma","Tuopų pumpurai","n"],
+    ["Primulae radix","Raktažolių šaknys","n"],
+    ["Primulae flos cum calyce","Raktažolių žiedai","n"],
+    ["Prunellae herba","Juodgalvių žolė","n"],
+    ["Pulmonariae herba","Plaučių žolė","n"],
+    ["Quercus cortex","Ąžuolų žievė","n"],
+    ["Rhapontici folium","Rapontikų lapai","n"],
+    ["Rhapontici radix","Rapontikų šaknys","n"],
+    ["Rhei radix","Rabarbarų šaknys","n"],
+    ["Rhodiolae rhizoma et radix","Rausvųjų rodiolių šakniastiebiai su šaknimis","n"],
+    ["Ribis nigri folium","Juodųjų serbentų lapai","n"],
+    ["Ribis nigri fructus","Juodųjų serbentų vaisiai","n"],
+    ["Rosae pseudo-fructus -/cum fructibus (Cynosbati fructus)","Erškėčių vaisiai","n"],
+    ["Rosmarini folium","Rozmarinų lapai","n"],
+    ["Rubi ideai folium","Aviečių lapai","n"],
+    ["Rubi ideai fructus","Aviečių vaisiai","n"],
+    ["Rumicis crispae radix (= Radix Lapathi)","Rūgštynių šaknys","n"],
+    ["Salicis cortex","Gluosnių žievė","n"],
+    ["Salviae officinalis folium","Vaistinių šalavijų lapai","n"],
+    ["Sambuci flos","Juoduogių šeivamedžių žiedai","n"],
+    ["Sambuci fructus","Juoduogių šeivamedžių vaisiai","n"],
+    ["Schisandrae fructus","Kininių citrinvyčių vaisiai","n"],
+    ["Sennae folium","Velniapupių lapai","n"],
+    ["Serpylli herba","Čiobrelių žolė","n"],
+    ["Silybi mariani fructus (Cardui mariae fructus)","Margainių vaisiai","n"],
+    ["Silybi mariani herba (Cardui mariae herba)","Margainių žolė","n"],
+    ["Solidaginis virgaureae herba","Paprastųjų rykštenių žolė","n"],
+    ["Sorbi aucupariae fructus","Šermukšnių vaisiai","n"],
+    ["Taraxaci radix","Paprastųjų kiaulpienių šaknys","n"],
+    ["Taraxaci folium","Paprastųjų kiaulpienių lapai","n"],
+    ["Taraxaci officinalis herba cum radice","Paprastųjų kiaulpienių žolė su šaknimis","n"],
+    ["Thymi herba","Vaistinių čiobrelių žolė","n"],
+    ["Tiliae folium","Liepų lapai","n"],
+    ["Tiliae cortex","Liepų žievė","n"],
+    ["Tiliae flos","Liepų žiedai","n"],
+    ["Tormentillae rhizoma","Miškinių sidabražolių šakniastiebiai","n"],
+    ["Trifolii pratensis herba","Dobilų žolė","n"],
+    ["Trifolii flos","Dobilų žiedynai","n"],
+    ["Trigonellae foenugraeci semen (Foenugraeci semen)","Ožragių sėklos","n"],
+    ["Urticae folium","Dilgėlių lapai","n"],
+    ["Urticae herba","Dilgėlių žolė","n"],
+    ["Urticae radix","Dilgėlių šaknys","n"],
+    ["Urticae fructus/semen","Dilgėlių vaisiai/sėklos","n"],
+    ["Uvae ursi folium","Meškauogių lapai","n"],
+    ["Vaccinii macrocarpi fructus (Oxycocci fructus)","Spanguolių vaisiai","n"],
+    ["Vaccinii macrocarpi succus (Oxycocci succus)","Spanguolių sultys","n"],
+    ["Valerianae radix","Valerijonų šaknys","n"],
+    ["Verbasci flos","Tūbių žiedai","n"],
+    ["Verbasci folium","Tūbių lapai","n"],
+    ["Veronicae herba","Veronikų žolė","n"],
+    ["Viburni opuli cortex","Putinų žievė","n"],
+    ["Viburni opuli fructus","Putinų vaisiai","n"],
+    ["Viburni opuli folium","Putinų lapai","n"],
+    ["Violae herba cum flore","Našlaičių žolė su žiedais","n"],
+    ["Vitis idaeae folium","Bruknių lapai","n"],
+    ["Vitis idaeae fructus","Bruknių vaisiai","n"],
+    ["Withaniae somniferae radix","Migdomųjų vitanijų šaknys","n"],
+    ["Zingiberis rhizoma","Imbierų šakniastiebiai","n"]
   ]
 };
 
@@ -326,7 +550,7 @@ var PW_HASH = "2dd605cd488226cd631049c5bbda95454a72f3a2878116cca5a5ff8e4b3f5c39"
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 var editMode = false;
-var activeF = {MT:'all', MG:'all', HE:'all'};
+var activeF = {MT:'all', MG:'all', HE:'all', AZ:'all'};
 
 // JSONBin.io — bendra serverio saugykla visiems lankytojams
 var BIN_ID  = '69bb2f10aa77b81da9f8fb2a';
@@ -334,7 +558,7 @@ var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 var BIN_KEY = '$2a$10$aj/v6D6IydWdsEru9ODmT.Tu/CBJ9sLEgpRQgtpjFHV/jH517cN7q';
 
 // In-memory cache (atnaujinama po kiekvieno GET/PUT)
-var _ov = {MT:{}, MG:{}, HE:{}};
+var _ov = {MT:{}, MG:{}, HE:{}, AZ:{}};
 // Debounce laikmatis — grupuoja greitus pakeitimus
 var _saveTimer = null;
 
@@ -349,6 +573,7 @@ function fetchOverrides(callback) {
     if (!_ov.MT) _ov.MT = {};
     if (!_ov.MG) _ov.MG = {};
     if (!_ov.HE) _ov.HE = {};
+    if (!_ov.AZ) _ov.AZ = {};
     if (callback) callback();
   })
   .catch(function(){ if (callback) callback(); });
@@ -372,9 +597,8 @@ function persistOverrides() {
 // Get effective stock for a product
 function getStock(sheet, idx) {
   var key = String(idx);
-  return (_ov[sheet] && _ov[sheet][key] !== undefined)
-    ? _ov[sheet][key]
-    : DEFAULT[sheet][idx][4];
+  if (_ov[sheet] && _ov[sheet][key] !== undefined) return _ov[sheet][key];
+  return sheet === 'AZ' ? DEFAULT[sheet][idx][2] : DEFAULT[sheet][idx][4];
 }
 
 function setStock(sheet, idx, val) {
@@ -410,7 +634,7 @@ function toggleEdit() {
 
 function resetAll() {
   if (!confirm('Ar tikrai norite atstatyti VISUS pakeitimus į pradinius duomenis? Tai negalima atšaukti.')) return;
-  _ov = {MT:{}, MG:{}, HE:{}};
+  _ov = {MT:{}, MG:{}, HE:{}, AZ:{}};
   clearTimeout(_saveTimer);
   fetch(BIN_URL, {
     method: 'PUT',
@@ -460,14 +684,23 @@ function build(s) {
     var onclick    = editMode ? ' onclick="toggle(\''+s+'\','+i+',this)"' : '';
     var badge = '<span class="'+badgeClass+badgeEdit+'" data-s="'+s+'" data-i="'+i+'"'+onclick+'>'+badgeText+'</span>';
     var bg = i%2===0 ? '' : ' style="background:#f7fbf7"';
-    rows += '<tr'+bg+' data-s="'+stock+'" data-q="'+r[0].toLowerCase()+' '+r[1].toLowerCase()+' '+r[3].toLowerCase()+'">'
-      +'<td class="num">'+(i+1)+'</td>'
-      +'<td class="lat">'+r[0]+'</td>'
-      +'<td>'+r[1]+'</td>'
-      +'<td><span class="form-badge">'+r[2]+'</span></td>'
-      +'<td class="grey">'+r[3]+'</td>'
-      +'<td>'+badge+'</td>'
-      +'</tr>';
+    if (s === 'AZ') {
+      rows += '<tr'+bg+' data-s="'+stock+'" data-q="'+r[0].toLowerCase()+' '+r[1].toLowerCase()+'">'
+        +'<td class="num">'+(i+1)+'</td>'
+        +'<td class="lat">'+r[0]+'</td>'
+        +'<td>'+r[1]+'</td>'
+        +'<td>'+badge+'</td>'
+        +'</tr>';
+    } else {
+      rows += '<tr'+bg+' data-s="'+stock+'" data-q="'+r[0].toLowerCase()+' '+r[1].toLowerCase()+' '+r[3].toLowerCase()+'">'
+        +'<td class="num">'+(i+1)+'</td>'
+        +'<td class="lat">'+r[0]+'</td>'
+        +'<td>'+r[1]+'</td>'
+        +'<td><span class="form-badge">'+r[2]+'</span></td>'
+        +'<td class="grey">'+r[3]+'</td>'
+        +'<td>'+badge+'</td>'
+        +'</tr>';
+    }
   }
   tb.innerHTML = rows;
   updateSum(s);
@@ -475,7 +708,7 @@ function build(s) {
 }
 
 function rebuildAll() {
-  build('MT'); build('MG'); build('HE');
+  build('MT'); build('MG'); build('HE'); build('AZ');
 }
 
 // ─── TOGGLE STOCK (edit mode) ────────────────────────────────────────────────
@@ -544,7 +777,7 @@ function sw(s, btn) {
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Pirmiausia krauname iš serverio, tada rodome lenteles
 fetchOverrides(function() {
-  build('MT'); build('MG'); build('HE');
+  build('MT'); build('MG'); build('HE'); build('AZ');
 });
 </script>
 </body>
